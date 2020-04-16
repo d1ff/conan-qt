@@ -564,8 +564,6 @@ class QtConan(ConanFile):
         if self.settings.os == "Linux":
             if self.options.GUI:
                 args.append("-system-xcb")
-        elif self.settings.os == "Macos":
-            args += ["-no-framework"]
         elif self.settings.os == "Android":
             args += ["-android-ndk-platform android-%s" % self.settings.os.api_level]
             args += ["-android-abis %s" % {"armv7": "armeabi-v7a",
