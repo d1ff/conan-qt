@@ -77,6 +77,7 @@ class QtConan(ConanFile):
         "with_libalsa": [True, False],
         "with_openal": [True, False],
         "with_zstd": [True, False],
+        "with_gstreamer": [True, False],
 
         "GUI": [True, False],
         "widgets": [True, False],
@@ -113,6 +114,7 @@ class QtConan(ConanFile):
         "with_libalsa": False,
         "with_openal": True,
         "with_zstd": True,
+        "with_gstreamer": False,
 
         "GUI": True,
         "widgets": True,
@@ -232,6 +234,7 @@ class QtConan(ConanFile):
         if not self.options.qtmultimedia:
             self.options.with_libalsa = False
             self.options.with_openal = False
+            self.options.with_gstreamer = False
 
         if self.settings.os != "Linux":
             self.options.with_libalsa = False
@@ -283,7 +286,7 @@ class QtConan(ConanFile):
 
     def requirements(self):
         if self.options.openssl:
-            self.requires("openssl/1.1.1f")
+            self.requires("openssl/1.1.1d")
         if self.options.with_pcre2:
             self.requires("pcre2/10.33")
 
@@ -321,6 +324,8 @@ class QtConan(ConanFile):
             self.requires("openal/1.19.1")
         if self.options.with_libalsa:
             self.requires("libalsa/1.1.9")
+        if self.options.qtmultimedia and self.options.with_gstreamer:
+            self.requires("gst-plugins-base/1.16.0@bincrafters/stable")
         if self.options.GUI and self.settings.os == "Linux":
             for p in self._xcb_packages:
                 self.requires("%s/%s@bincrafters/stable" % (p, self._xcb_packages[p]))
@@ -491,7 +496,7 @@ class QtConan(ConanFile):
             args += ["-opengl desktop"]
         elif self.options.opengl == "dynamic":
             args += ["-opengl dynamic"]
-        
+
         if self.options.with_vulkan:
             args.append("-vulkan")
         else:
@@ -519,6 +524,8 @@ class QtConan(ConanFile):
 
         if self.options.qtmultimedia:
             args.append("--alsa=" + ("yes" if self.options.with_libalsa else "no"))
+            if self.options.with_gstreamer:
+                args.append("-gstreamer")
 
         for opt, conf_arg in [
                               ("with_doubleconversion", "doubleconversion"),
@@ -555,7 +562,8 @@ class QtConan(ConanFile):
                   ("openal", "OPENAL"),
                   ("zstd", "ZSTD"),
                   ("libalsa", "ALSA"),
-                  ("xkbcommon", "XKBCOMMON")]
+                  ("xkbcommon", "XKBCOMMON"),
+                  ("gst-plugins-base", "GSTREAMER")]
         for package, var in libmap:
             if package in self.deps_cpp_info.deps:
                 if package == 'freetype':
