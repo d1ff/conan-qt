@@ -77,7 +77,7 @@ class QtConan(ConanFile):
         "with_libalsa": [True, False],
         "with_openal": [True, False],
         "with_zstd": [True, False],
-        "with_gstreamer": [True, False],
+        "with_gstreamer": "ANY",
 
         "GUI": [True, False],
         "widgets": [True, False],
@@ -114,7 +114,7 @@ class QtConan(ConanFile):
         "with_libalsa": False,
         "with_openal": True,
         "with_zstd": True,
-        "with_gstreamer": False,
+        "with_gstreamer": None,
 
         "GUI": True,
         "widgets": True,
@@ -324,8 +324,6 @@ class QtConan(ConanFile):
             self.requires("openal/1.19.1")
         if self.options.with_libalsa:
             self.requires("libalsa/1.1.9")
-        if self.options.qtmultimedia and self.options.with_gstreamer:
-            self.requires("gst-plugins-base/1.16.0@bincrafters/stable")
         if self.options.GUI and self.settings.os == "Linux":
             for p in self._xcb_packages:
                 self.requires("%s/%s@bincrafters/stable" % (p, self._xcb_packages[p]))
@@ -526,6 +524,15 @@ class QtConan(ConanFile):
             args.append("--alsa=" + ("yes" if self.options.with_libalsa else "no"))
             if self.options.with_gstreamer:
                 args.append("-gstreamer")
+                args.append("-I %s\\include" % self.options.with_gstreamer)
+                args.append("-I %s\\include\\gstreamer-1.0" % self.options.with_gstreamer)
+                args.append("-L %s\\lib" % self.options.with_gstreamer)
+                args.append("-L %s\\lib\\gstreamer-1.0" % self.options.with_gstreamer)
+                args.append("GSTREAMER_PREFIX=%s" % self.options.with_gstreamer)
+                args.append("GSTREAMER_APP_PREFIX=%s" % self.options.with_gstreamer)
+                args.append("GSTREAMER_GL_PREFIX=%s" % self.options.with_gstreamer)
+                args.append("GSTREAMER_IMXCOMMON_PREFIX=%s" % self.options.with_gstreamer)
+                args.append("GSTREAMER_PHOTOGRAPHY_PREFIX=%s" % self.options.with_gstreamer)
 
         for opt, conf_arg in [
                               ("with_doubleconversion", "doubleconversion"),
